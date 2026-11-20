@@ -130,11 +130,30 @@ h1{font-family:var(--head);font-size:clamp(38px,5.4vw,80px);line-height:1.04;fon
   .map-foot .coords strong{font-size:13px;color:#83d9ff}
   .maplibregl-ctrl-bottom-right{bottom:46px;right:8px}
   .maplibregl-ctrl-attrib{font-size:9px!important;opacity:.8}
-  .airport-marker{width:18px;height:18px;border:3px solid #fff;border-radius:50%;
-    background:#16bfff;box-shadow:0 0 0 7px rgba(22,191,255,.2),0 0 28px #16bfff;position:relative}
-  .airport-marker:after{content:"";position:absolute;inset:-13px;border:1px solid #6edaff;
-    border-radius:50%;animation:airportPulse 2.2s ease-out infinite}
-  @keyframes airportPulse{0%{transform:scale(.55);opacity:.95}100%{transform:scale(2.1);opacity:0}}
+  /* Premium airport locator: luminous pin + glass label + radar halo */
+  .airport-marker{position:relative;width:46px;height:58px;cursor:pointer;filter:drop-shadow(0 5px 13px rgba(0,0,0,.65))}
+  .airport-marker .pin-shell{position:absolute;left:7px;top:1px;width:32px;height:32px;
+    display:grid;place-items:center;border:2px solid rgba(255,255,255,.98);
+    border-radius:50% 50% 50% 8px;transform:rotate(-45deg);
+    background:linear-gradient(145deg,#75e1ff 0%,#08a9ef 52%,#075baf 100%);
+    box-shadow:0 0 0 5px rgba(23,185,255,.2),0 0 24px rgba(22,191,255,.9)}
+  .airport-marker .pin-core{width:10px;height:10px;border-radius:50%;
+    background:#fff;box-shadow:0 0 10px #fff}
+  .airport-marker .pin-stem{position:absolute;left:21px;top:31px;width:4px;height:17px;
+    border-radius:4px;background:linear-gradient(#b9f1ff,rgba(36,174,255,0));
+    box-shadow:0 0 9px rgba(22,191,255,.9)}
+  .airport-marker .pin-halo{position:absolute;left:2px;top:43px;width:42px;height:12px;
+    border:1px solid rgba(92,220,255,.9);border-radius:50%;
+    background:rgba(20,177,255,.13);transform:perspective(35px) rotateX(58deg);
+    animation:airportHalo 2s ease-out infinite}
+  .airport-marker .pin-label{position:absolute;left:52px;top:7px;white-space:nowrap;
+    padding:5px 9px;border:1px solid rgba(118,218,255,.55);border-radius:6px;
+    background:rgba(4,19,32,.88);color:#effaff;font:600 10px/1.2 'DM Sans',Arial,sans-serif;
+    letter-spacing:.12em;box-shadow:0 5px 18px rgba(0,0,0,.35);backdrop-filter:blur(8px)}
+  .airport-marker .pin-label:before{content:"";display:inline-block;width:6px;height:6px;
+    margin:0 6px 1px 0;border-radius:50%;background:#4be0ff;box-shadow:0 0 8px #4be0ff}
+  @keyframes airportHalo{0%{transform:perspective(35px) rotateX(58deg) scale(.55);opacity:.95}
+    100%{transform:perspective(35px) rotateX(58deg) scale(1.9);opacity:0}}
   @media(max-width:860px){.map{justify-self:start;width:min(100%,420px)}}
   @media(prefers-reduced-motion:reduce){.airport-marker:after{animation:none}}
 </style>
@@ -270,7 +289,10 @@ arcpy.analysis.Buffer("rwy", "rwy_buf", "50 Meters")</pre>
 
   const marker = document.createElement('div');
   marker.className = 'airport-marker';
-  new maplibregl.Marker({element: marker, anchor: 'center'})
+  marker.setAttribute('role', 'img');
+  marker.setAttribute('aria-label', 'Cairo International Airport location');
+  marker.innerHTML = '<span class="pin-halo"></span><span class="pin-shell"><span class="pin-core"></span></span><span class="pin-stem"></span><span class="pin-label">CAIRO AIRPORT · CAI</span>';
+  new maplibregl.Marker({element: marker, anchor: 'bottom'})
     .setLngLat(airport)
     .setPopup(new maplibregl.Popup({offset: 18}).setHTML(
       '<strong style="font-family:Arial">Cairo International Airport</strong><br><span style="font-size:12px">CAI · 30.1219° N, 31.4056° E</span>'
