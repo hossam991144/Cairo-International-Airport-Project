@@ -102,6 +102,42 @@ h1{font-family:var(--head);font-size:clamp(38px,5.4vw,80px);line-height:1.04;fon
   .bar .wrap{justify-content:center;text-align:center}
 }
 </style>
+<link href="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.css" rel="stylesheet">
+<style>
+  /* IMMERSIVE AIRPORT MAP */
+  .map{
+    position:relative;justify-self:end;width:min(100%,520px,calc(100svh - 260px));
+    min-width:280px;aspect-ratio:1.08;border:1px solid rgba(112,205,255,.45);
+    border-radius:18px;background:#071522;overflow:hidden;
+    box-shadow:0 28px 90px rgba(0,0,0,.62),0 0 38px rgba(47,180,239,.16);
+    isolation:isolate
+  }
+  #airportMap{position:absolute;inset:0}
+  .map:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
+    background:linear-gradient(180deg,rgba(3,12,22,.72),transparent 23%,transparent 68%,rgba(3,12,22,.78))}
+  .map-bar,.map-foot{z-index:3;pointer-events:none}
+  .map-bar{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;
+    padding:13px 16px;font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+    color:#d7edfa;border-bottom:1px solid rgba(255,255,255,.16);
+    background:linear-gradient(180deg,rgba(3,12,22,.72),transparent)}
+  .map-bar span:last-child{color:#71d4ff}
+  .map-foot{position:absolute;left:17px;right:17px;bottom:15px;display:flex;
+    justify-content:space-between;align-items:flex-end;font-size:11px;letter-spacing:.08em;
+    color:#b9cfdd;text-transform:uppercase}
+  .map-foot strong{display:block;font-family:var(--head);font-size:17px;letter-spacing:.02em;
+    font-weight:700;color:#fff}
+  .map-foot .coords{text-align:right}
+  .map-foot .coords strong{font-size:13px;color:#83d9ff}
+  .maplibregl-ctrl-bottom-right{bottom:46px;right:8px}
+  .maplibregl-ctrl-attrib{font-size:9px!important;opacity:.8}
+  .airport-marker{width:18px;height:18px;border:3px solid #fff;border-radius:50%;
+    background:#16bfff;box-shadow:0 0 0 7px rgba(22,191,255,.2),0 0 28px #16bfff;position:relative}
+  .airport-marker:after{content:"";position:absolute;inset:-13px;border:1px solid #6edaff;
+    border-radius:50%;animation:airportPulse 2.2s ease-out infinite}
+  @keyframes airportPulse{0%{transform:scale(.55);opacity:.95}100%{transform:scale(2.1);opacity:0}}
+  @media(max-width:860px){.map{justify-self:start;width:min(100%,420px)}}
+  @media(prefers-reduced-motion:reduce){.airport-marker:after{animation:none}}
+</style>
 </head>
 <body>
 
@@ -177,17 +213,13 @@ arcpy.analysis.Buffer("rwy", "rwy_buf", "50 Meters")</pre>
         </a>
       </div>
 
-      <div class="map" role="img" aria-label="Map graticule marking the location of Cairo International Airport">
-        <div class="map-bar"><span>Airport location</span><span>WGS 84</span></div>
-        <svg viewBox="0 0 440 440" fill="none" aria-hidden="true">
-          <g stroke="rgba(255,255,255,.07)"><path d="M0 110H440M0 165H440M0 220H440M0 275H440M0 330H440M55 0V440M110 0V440M165 0V440M220 0V440M275 0V440M330 0V440M385 0V440"/></g>
-          <g stroke="rgba(47,180,239,.32)" stroke-width="1.2"><path d="M-20 340C70 300 120 310 190 262S320 140 460 158"/><path d="M-20 380C80 340 140 352 212 304S340 190 460 206"/><path d="M-20 300C60 262 105 270 160 226S300 88 460 108"/></g>
-          <g transform="rotate(-38 220 215)"><rect x="108" y="209" width="224" height="12" rx="2" fill="rgba(243,247,250,.14)" stroke="rgba(243,247,250,.5)"/><path d="M116 215H324" stroke="rgba(243,247,250,.6)" stroke-dasharray="8 8"/><rect x="140" y="160" width="160" height="9" rx="2" fill="rgba(243,247,250,.1)" stroke="rgba(243,247,250,.4)"/></g>
-          <circle class="ping" cx="220" cy="215" r="22" stroke="#2fb4ef" stroke-width="2"/>
-          <circle cx="220" cy="215" r="7" fill="#2fb4ef"/>
-          <path d="M220 175V200M220 230V255M180 215H205M235 215H260" stroke="#2fb4ef" stroke-width="1.5"/>
-        </svg>
-        <div class="map-foot"><div><strong>CAI</strong>Cairo, Egypt</div><div style="text-align:right"><strong>30.12° N</strong>31.41° E</div></div>
+      <div class="map" aria-label="Interactive immersive satellite map of Cairo International Airport">
+        <div id="airportMap"></div>
+        <div class="map-bar"><span>Live satellite view</span><span>CAI · 3D perspective</span></div>
+        <div class="map-foot">
+          <div><strong>CAIRO INT'L</strong>Airport · Egypt</div>
+          <div class="coords"><strong>30.1219° N</strong>31.4056° E</div>
+        </div>
       </div>
     </div>
   </main>
@@ -200,5 +232,60 @@ arcpy.analysis.Buffer("rwy", "rwy_buf", "50 Meters")</pre>
   </div>
 </div>
 
+<script src="https://unpkg.com/maplibre-gl@5.6.2/dist/maplibre-gl.js"></script>
+<script>
+(() => {
+  const airport = [31.4056, 30.1219]; // longitude, latitude
+  const map = new maplibregl.Map({
+    container: 'airportMap',
+    style: {
+      version: 8,
+      sources: {
+        imagery: {
+          type: 'raster',
+          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+          tileSize: 256,
+          attribution: 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics'
+        },
+        labels: {
+          type: 'raster',
+          tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'],
+          tileSize: 256,
+          attribution: 'Labels © Esri'
+        }
+      },
+      layers: [
+        { id: 'satellite', type: 'raster', source: 'imagery', paint: {'raster-saturation': 0.12, 'raster-contrast': 0.08} },
+        { id: 'place-labels', type: 'raster', source: 'labels', paint: {'raster-opacity': 0.82} }
+      ]
+    },
+    center: airport,
+    zoom: 15.8,
+    pitch: 62,
+    bearing: -28,
+    maxPitch: 75,
+    attributionControl: true,
+    antialias: true
+  });
+
+  const marker = document.createElement('div');
+  marker.className = 'airport-marker';
+  new maplibregl.Marker({element: marker, anchor: 'center'})
+    .setLngLat(airport)
+    .setPopup(new maplibregl.Popup({offset: 18}).setHTML(
+      '<strong style="font-family:Arial">Cairo International Airport</strong><br><span style="font-size:12px">CAI · 30.1219° N, 31.4056° E</span>'
+    ))
+    .addTo(map);
+
+  map.addControl(new maplibregl.NavigationControl({visualizePitch: true}), 'top-right');
+  map.addControl(new maplibregl.ScaleControl({maxWidth: 90, unit: 'metric'}), 'bottom-left');
+
+  // A slow cinematic camera drift keeps the location view alive without distracting movement.
+  map.once('load', () => {
+    map.easeTo({center: airport, zoom: 16.1, pitch: 64, bearing: -34, duration: 2200});
+  });
+  window.addEventListener('resize', () => map.resize());
+})();
+</script>
 </body>
 </html>
