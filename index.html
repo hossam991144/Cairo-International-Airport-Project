@@ -68,6 +68,8 @@ h1 .airport-word{background:linear-gradient(90deg,#20baff,#62e0ff);-webkit-backg
 .btn{display:inline-flex;align-items:center;gap:8px;margin-top:32px;padding:11px 19px;border-radius:8px;background:var(--blue);color:#031a2b;font-family:var(--head);font-size:14px;font-weight:600;text-decoration:none;box-shadow:0 12px 30px rgba(47,180,239,.28);transition:transform .25s,background .25s}
 .btn:hover{background:#63c8f4;transform:translateY(-2px)}
 .btn svg{width:15px;height:15px}
+.btn-label{display:inline-block;animation:labelFloat 2.4s ease-in-out infinite}
+@keyframes labelFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 
 /* LOCATION PANEL */
 .map{position:relative;justify-self:end;width:min(100%,430px,calc(100svh - 300px));min-width:280px;aspect-ratio:1;border:1px solid var(--line2);border-radius:16px;background:rgba(6,21,36,.6);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);overflow:hidden;box-shadow:0 30px 70px rgba(0,0,0,.45)}
@@ -233,7 +235,7 @@ arcpy.analysis.Buffer("rwy", "rwy_buf", "50 Meters")</pre>
         <h1>Cairo International <span class="airport-word">Airport</span></h1>
         <p class="subtitle">Building a digital geospatial database: project information, spatial data and engineering applications in one portal.</p>
         <a class="btn" href="https://www.arcgis.com/apps/instant/basic/index.html?appid=9813fbef9f8b4081b347881b2267dd5a" target="_blank" rel="noopener noreferrer">
-          Open GIS project
+          <span class="btn-label">Open GIS project</span>
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 14 14 6M7 6h7v7"/></svg>
         </a>
       </div>
