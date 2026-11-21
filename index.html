@@ -106,10 +106,10 @@ h1{font-family:var(--head);font-size:clamp(38px,5.4vw,80px);line-height:1.04;fon
 <style>
   /* IMMERSIVE AIRPORT MAP */
   .map{
-    position:relative;justify-self:end;width:min(100%,520px,calc(100svh - 260px));
-    min-width:280px;aspect-ratio:1.08;border:1px solid rgba(112,205,255,.45);
-    border-radius:18px;background:#071522;overflow:hidden;
-    box-shadow:0 28px 90px rgba(0,0,0,.62),0 0 38px rgba(47,180,239,.16);
+    position:relative;justify-self:end;width:min(100%,260px,calc(100svh - 460px));
+    min-width:180px;aspect-ratio:1.08;border:1px solid rgba(112,205,255,.25);
+    border-radius:10px;background:#071522;overflow:hidden;
+    box-shadow:0 22px 60px rgba(0,0,0,.55),0 0 26px rgba(47,180,239,.12);
     isolation:isolate
   }
   #airportMap{position:absolute;inset:0}
@@ -154,7 +154,7 @@ h1{font-family:var(--head);font-size:clamp(38px,5.4vw,80px);line-height:1.04;fon
     margin:0 6px 1px 0;border-radius:50%;background:#4be0ff;box-shadow:0 0 8px #4be0ff}
   @keyframes airportHalo{0%{transform:perspective(35px) rotateX(58deg) scale(.55);opacity:.95}
     100%{transform:perspective(35px) rotateX(58deg) scale(1.9);opacity:0}}
-  @media(max-width:860px){.map{justify-self:start;width:min(100%,420px)}}
+  @media(max-width:860px){.map{justify-self:start;width:min(100%,210px);min-width:0}}
   @media(prefers-reduced-motion:reduce){.airport-marker:after{animation:none}}
 </style>
 </head>
